@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="theme-color" content="#1C1C2E">
+    <title>gimpho</title>
+
+    <!-- Meta Data -->
+    <meta name="description" content="Personal portfolio of gimpho. Built with retro charm and questionable decisions.">
+    <meta name="keywords" content="gimpho, chathnindu, portfolio, developer, retro">
+    <meta name="author" content="gimpho">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="gimpho">
+    <meta property="og:description"
+        content="Personal portfolio of gimpho. Built with retro charm and questionable decisions.">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Retro Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+    <!-- Three.js & GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        retro: {
+                            bg: "#1C1C2E",
+                            text: "#E0E8FF",
+                            cyan: "#88C0D0",
+                            blue: "#7EB8DA",
+                            amber: "#F0C674",
+                            orange: "#D08770",
+                            red: "#BF616A",
+                            green: "#A3BE8C",
+                            dim: "#252540",
+                            border: "#3A3A5C",
+                            muted: "#8888AA",
+                        }
+                    },
+                    fontFamily: {
+                        display: ["'Source Code Pro'", "monospace"],
+                        body: ["'Source Code Pro'", "monospace"],
+                        mono: ["'Source Code Pro'", "monospace"],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        html,
+        body {
+            background: #1C1C2E !important;
+            color: #E0E8FF;
+        }
+
+        /* CRT scanlines — very subtle */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9998;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0px, rgba(0, 0, 0, 0.05) 1px, transparent 1px, transparent 3px);
+            opacity: 0.2;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1C1C2E;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3A3A5C;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7EB8DA;
+        }
+
+        /* Nav glass */
+        .nav-glass {
+            background: rgba(28, 28, 46, 0.92);
+            border-bottom: 1px solid rgba(126, 184, 218, 0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* Blink cursor */
+        @keyframes blink {
+
+            0%,
+            50% {
+                opacity: 1
+            }
+
+            51%,
+            100% {
+                opacity: 0
+            }
+        }
+
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        /* Glitch */
+        @keyframes glitch {
+
+            0%,
+            100% {
+                text-shadow: none
+            }
+
+            20% {
+                text-shadow: -2px 0 #88C0D0, 2px 0 #D08770
+            }
+
+            40% {
+                text-shadow: 2px 0 #88C0D0, -2px 0 #D08770
+            }
+
+            60% {
+                text-shadow: -1px 0 #D08770, 1px 0 #88C0D0
+            }
+
+            80% {
+                text-shadow: 1px 0 #D08770, -1px 0 #88C0D0
+            }
+        }
+
+        .glitch {
+            animation: glitch 4s ease-in-out infinite;
+        }
+
+        /* Terminal window */
+        .term-win {
+            border: 1px solid #3A3A5C;
+        }
+
+        .term-bar {
+            background: #3A3A5C;
+            color: #E0E8FF;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 16px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .term-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .term-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: block;
+        }
+
+        /* Glow */
+        .glow {
+            text-shadow: 0 0 10px rgba(126, 184, 218, 0.25);
+        }
+
+        .glow-amber {
+            text-shadow: 0 0 10px rgba(240, 198, 116, 0.25);
+        }
+
+        /* Selection */
+        ::selection {
+            background: #7EB8DA;
+            color: #1C1C2E;
+        }
+
+        /* Float animations */
+        @keyframes float1 {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg)
+            }
+
+            50% {
+                transform: translateY(-8px) rotate(3deg)
+            }
+        }
+
+        @keyframes float2 {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(6px) rotate(-3deg)
+            }
+        }
+
+        .anim-float {
+            animation: float1 4s ease-in-out infinite;
+        }
+
+        .anim-float2 {
+            animation: float2 3.5s ease-in-out infinite;
+        }
+
+        /* Retro blink */
+        @keyframes rblink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.3
+            }
+        }
+
+        .retro-blink {
+            animation: rblink 2s ease-in-out infinite;
+        }
+
+
+        /* Avatar spin */
+        .avatar-spin:hover {
+            animation: spin360 0.6s ease-in-out;
+        }
+
+        @keyframes spin360 {
+            from {
+                transform: rotate(0deg) scale(1.1)
+            }
+
+            to {
+                transform: rotate(360deg) scale(1.1)
+            }
+        }
+
+        /* Floating CV Button */
+        .floating-cv-btn {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 9990;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 20px;
+            color: #1C1C2E;
+            background: linear-gradient(135deg, #88C0D0, #7EB8DA);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 4px 24px rgba(136, 192, 208, 0.35), 0 0 0 0 rgba(136, 192, 208, 0.4);
+            transition: all 0.3s ease;
+            animation: cvPulse 2.5s ease-in-out infinite;
+        }
+
+        .floating-cv-btn:hover {
+            background: linear-gradient(135deg, #F0C674, #D08770);
+            box-shadow: 0 6px 30px rgba(240, 198, 116, 0.45);
+            transform: translateY(-3px) scale(1.05);
+            animation: none;
+        }
+
+        .floating-cv-btn:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+        .floating-cv-btn i {
+            font-size: 18px;
+        }
+
+        @keyframes cvPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 4px 24px rgba(136, 192, 208, 0.35), 0 0 0 0 rgba(136, 192, 208, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 4px 24px rgba(136, 192, 208, 0.35), 0 0 0 12px rgba(136, 192, 208, 0);
+            }
+        }
+
+        /* Mobile text sizes */
+        @media (max-width: 640px) {
+            .term-bar {
+                font-size: 13px;
+            }
+
+            .floating-cv-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                font-size: 18px;
+            }
+
+            .floating-cv-btn .cv-label {
+                display: none;
+            }
+
+            .floating-cv-btn {
+                border-radius: 50%;
+                padding: 16px;
+            }
+
+            .floating-cv-btn i {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="font-body overflow-x-hidden min-h-screen flex flex-col"
+    style="background:#1C1C2E;color:#E0E8FF; font-family: 'Source Code Pro', monospace;">
+
+    <!-- ★ Starfield Canvas ★ -->
+    <canvas id="stars" class="fixed inset-0 w-full h-full pointer-events-none" style="z-index:0;"></canvas>
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="h-12 md:h-14 flex items-center justify-between px-3 md:px-12 sticky top-0 z-50 nav-glass">
+        <a href="https://github.com/chathnindu" target="_blank" rel="noopener noreferrer"
+            class="flex items-center gap-1 md:gap-2 text-retro-text hover:text-retro-cyan transition-colors">
+            <i class="fab fa-github text-lg md:text-xl"></i>
+            <span class="text-base md:text-xl">github</span>
+        </a>
+        <div class="absolute left-1/2 -translate-x-1/2 flex items-center cursor-pointer">
+            <span class="font-display text-xs md:text-sm glow">chathnindu</span>
+        </div>
+        <a href="https://www.linkedin.com/in/chathnindu/" target="_blank" rel="noopener noreferrer"
+            class="flex items-center gap-1 md:gap-2 text-retro-text hover:text-retro-cyan transition-colors">
+            <span class="text-base md:text-xl">linkedin</span>
+            <i class="fab fa-linkedin text-lg md:text-xl"></i>
+        </a>
+    </header>
+
+    <!-- ═══ HERO ═══ -->
+    <main class="flex-grow relative w-full h-[480px] md:h-[700px] flex items-center justify-center overflow-hidden"
+        style="z-index:1;">
+        <div class="z-10 text-center pointer-events-none select-none px-4 max-w-3xl">
+            <h1 id="hero-title"
+                class="font-display text-xl sm:text-3xl md:text-5xl lg:text-6xl tracking-tight mb-3 md:mb-6 glow leading-relaxed md:leading-normal break-all sm:break-normal"
+                style="border-right: 3px solid #88C0D0; display: inline-block; min-height: 1.2em;">
+            </h1>
+        </div>
+
+
+    </main>
+
+    <!-- ═══ ABOUT SECTION ═══ -->
+    <section class="px-3 md:px-12 py-6 md:py-14 relative" style="z-index:2;">
+        <div class="term-win mb-8 md:mb-16">
+            <div class="term-bar">
+                <div class="term-dots">
+                    <span style="background:#BF616A"></span>
+                    <span style="background:#F0C674"></span>
+                    <span style="background:#A3BE8C"></span>
+                </div>
+                <span>guestbook.exe</span>
+            </div>
+            <div class="p-4 md:p-8" style="background:rgba(37,37,64,0.5);">
+                <div class="grid md:grid-cols-2 gap-5 md:gap-10">
+                    <!-- Left -->
+                    <div class="text-center md:text-left">
+                        <h2 class="text-base font-display leading-loose mb-4 md:mb-6 glow" style="line-height:2.2;">
+                            hey there!<br>check out my<br>cool stuff 👾
+                        </h2>
+                        <div class="flex flex-col sm:flex-row items-center md:items-start gap-3 mb-4">
+                            <div class="relative" id="proj-wrap">
+                                <span
+                                    class="absolute -top-5 -left-4 md:-top-7 md:-left-5 text-lg md:text-2xl anim-float select-none pointer-events-none">⚡</span>
+                                <span
+                                    class="absolute -top-4 right-0 md:-top-5 text-base md:text-xl anim-float2 select-none pointer-events-none">✨</span>
+                                <span
+                                    class="absolute -bottom-5 -right-4 md:-bottom-7 md:-right-5 text-lg md:text-2xl anim-float select-none pointer-events-none"
+                                    style="animation-delay:.4s">👾</span>
+
+                                <a href="https://github.com/chathnindu?tab=repositories" target="_blank"
+                                    rel="noopener noreferrer" id="proj-btn"
+                                    class="group relative inline-flex items-center gap-2 md:gap-3 px-5 py-3 md:px-8 md:py-4 font-display text-sm text-retro-bg bg-retro-cyan hover:bg-retro-amber active:scale-95 transition-all duration-300 overflow-hidden">
+                                    <span
+                                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+                                    <i class="fab fa-github text-base md:text-lg relative z-10"></i>
+                                    <span class="relative z-10">view my projects</span>
+                                    <i
+                                        class="fas fa-arrow-right text-xs relative z-10 group-hover:translate-x-2 transition-transform"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Programming Languages -->
+                    <div>
+                        <h3 class="text-base md:text-lg mb-3 md:mb-5 text-retro-amber glow-amber">languages i code �
+                        </h3>
+                        <div class="flex flex-col gap-3">
+                            <a href="https://www.python.org/" target="_blank" rel="noopener noreferrer"
+                                class="block p-3 border border-retro-border hover:border-retro-cyan transition-all text-center hover:bg-retro-dim/50"
+                                style="background:rgba(37,37,64,0.4);">
+                                <span class="font-display text-sm">Python</span>
+                            </a>
+                            <a href="https://dev.java/" target="_blank" rel="noopener noreferrer"
+                                class="block p-3 border border-retro-border hover:border-retro-cyan transition-all text-center hover:bg-retro-dim/50"
+                                style="background:rgba(37,37,64,0.4);">
+                                <span class="font-display text-sm">Java</span>
+                            </a>
+                            <a href="https://dotnet.microsoft.com/en-us/languages/csharp" target="_blank"
+                                rel="noopener noreferrer"
+                                class="block p-3 border border-retro-border hover:border-retro-cyan transition-all text-center hover:bg-retro-dim/50"
+                                style="background:rgba(37,37,64,0.4);">
+                                <span class="font-display text-sm">C#</span>
+                            </a>
+                            <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank"
+                                rel="noopener noreferrer"
+                                class="block p-3 border border-retro-border hover:border-retro-cyan transition-all text-center hover:bg-retro-dim/50"
+                                style="background:rgba(37,37,64,0.4);">
+                                <span class="font-display text-sm">JavaScript</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Under Construction -->
+        <div class="flex justify-center items-center gap-2 mb-5 md:mb-8 retro-blink">
+            <span class="text-retro-amber text-lg">🚧</span>
+            <span class="text-sm md:text-base text-retro-muted">page under construction</span>
+            <span class="text-retro-amber text-lg">🚧</span>
+        </div>
+
+        <!-- Large Title — Liquid Text -->
+        <div class="w-full border-b border-retro-border/30 mb-3 py-6 md:py-14">
+            <h1 id="ink-text"
+                class="font-display text-[11vw] md:text-[10vw] leading-none tracking-tighter text-center select-none whitespace-nowrap cursor-default glow">
+                chathnindu
+            </h1>
+        </div>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer
+        class="px-3 md:px-12 py-3 md:py-4 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center text-retro-muted border-t border-retro-border/20 text-center text-sm md:text-base"
+        style="z-index:2;">
+        <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-3">
+            <span>
+                © <a href="https://www.python.org/psf-landing/" target="_blank" rel="noopener noreferrer"
+                    class="hover:text-retro-cyan transition-colors">1991</a>
+                <a href="https://bsky.app/profile/gimpho.bsky.social" target="_blank" rel="noopener noreferrer"
+                    class="hover:text-retro-cyan transition-colors">gimpho</a>
+            </span>
+            <span class="hidden sm:inline text-retro-border">·</span>
+            <span class="text-retro-muted/60">built with <a href="https://www.xda-developers.com/" target="_blank"
+                    rel="noopener noreferrer" class="text-retro-blue hover:text-retro-cyan transition-colors"><i
+                        class="fas fa-heart"></i></a></span>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-3">
+            <a href="https://github.com/vinta/awesome-python" target="_blank" rel="noopener noreferrer"
+                class="hover:text-retro-cyan transition-colors">awsome-python</a>
+            <span class="hidden sm:inline text-retro-border">·</span>
+            <a href="https://github.com/mcauser/awesome-micropython" target="_blank" rel="noopener noreferrer"
+                class="hover:text-retro-cyan transition-colors">awesome-micropython</a>
+        </div>
+    </footer>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         ALL JAVASCRIPT — INLINE FOR RELIABILITY
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <script>
+        (function () {
+            'use strict';
+
+            // ──────────────────────────────────────────────────
+            // STARFIELD BACKGROUND
+            // ──────────────────────────────────────────────────
+            function initStarfield() {
+                const canvas = document.getElementById('stars');
+                if (!canvas) return;
+
+                const isMobile = window.innerWidth < 768;
+                const COUNT = isMobile ? 250 : 500;
+                const DEPTH = 1800;
+                const SPEED = isMobile ? 1.5 : 2.5;
+
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, DEPTH);
+                camera.position.z = 0;
+
+                const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: !isMobile });
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                // Star colors — warm & cool mix
+                const palette = [
+                    new THREE.Color(0xE0E8FF), new THREE.Color(0xE0E8FF), new THREE.Color(0xE0E8FF),
+                    new THREE.Color(0x88C0D0), new THREE.Color(0x7EB8DA), new THREE.Color(0xF0C674)
+                ];
+
+                const positions = new Float32Array(COUNT * 3);
+                const colors = new Float32Array(COUNT * 3);
+
+                for (let i = 0; i < COUNT; i++) {
+                    const i3 = i * 3;
+                    positions[i3] = (Math.random() - 0.5) * 1000;
+                    positions[i3 + 1] = (Math.random() - 0.5) * 1000;
+                    positions[i3 + 2] = Math.random() * DEPTH;
+                    const c = palette[Math.floor(Math.random() * palette.length)];
+                    colors[i3] = c.r; colors[i3 + 1] = c.g; colors[i3 + 2] = c.b;
+                }
+
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+                const mat = new THREE.PointsMaterial({
+                    size: isMobile ? 2 : 2.5,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.75,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true
+                });
+
+                scene.add(new THREE.Points(geo, mat));
+
+                let mx = 0, my = 0;
+                if (!isMobile) {
+                    document.addEventListener('mousemove', e => {
+                        mx = (e.clientX / window.innerWidth - 0.5) * 30;
+                        my = (e.clientY / window.innerHeight - 0.5) * 30;
+                    });
+                }
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+
+                function loop() {
+                    requestAnimationFrame(loop);
+                    for (let i = 0; i < positions.length; i += 3) {
+                        positions[i + 2] -= SPEED;
+                        if (positions[i + 2] < 1) {
+                            positions[i + 2] = DEPTH;
+                            positions[i] = (Math.random() - 0.5) * 1000;
+                            positions[i + 1] = (Math.random() - 0.5) * 1000;
+                        }
+                    }
+                    geo.attributes.position.needsUpdate = true;
+                    if (!isMobile) {
+                        camera.position.x += (mx - camera.position.x) * 0.015;
+                        camera.position.y += (-my - camera.position.y) * 0.015;
+                    }
+                    camera.lookAt(0, 0, DEPTH / 2);
+                    renderer.render(scene, camera);
+                }
+                loop();
+
+            }
+
+            // ──────────────────────────────────────────────────
+            // GSAP ANIMATIONS
+            // ──────────────────────────────────────────────────
+            function initAnimations() {
+                gsap.registerPlugin(ScrollTrigger);
+
+                // Multi-language typewriter for hero
+                const heroEl = document.getElementById('hero-title');
+                if (heroEl) {
+                    const words = [
+                        'print("Hello World")',           // Python
+                        'console.log("Welcome")',         // JS
+                        'System.out.println("Hi")',       // Java
+                        'Console.WriteLine("Hey")',       // C#
+                    ];
+                    let wordIdx = 0;
+                    let charIdx = 0;
+                    let isDeleting = false;
+
+                    function tick() {
+                        const current = words[wordIdx];
+                        const displayed = [...current].slice(0, charIdx).join('');
+                        heroEl.textContent = displayed;
+
+                        if (!isDeleting) {
+                            // Typing
+                            if (charIdx < [...current].length) {
+                                charIdx++;
+                                setTimeout(tick, 90 + Math.random() * 50);
+                            } else {
+                                // Pause, then start deleting
+                                setTimeout(() => { isDeleting = true; tick(); }, 2200);
+                            }
+                        } else {
+                            // Deleting
+                            if (charIdx > 0) {
+                                charIdx--;
+                                setTimeout(tick, 40 + Math.random() * 25);
+                            } else {
+                                // Move to next word
+                                isDeleting = false;
+                                wordIdx = (wordIdx + 1) % words.length;
+                                setTimeout(tick, 400);
+                            }
+                        }
+                    }
+                    setTimeout(tick, 600);
+                }
+
+                // Project button entrance
+                gsap.from('#proj-wrap', {
+                    scrollTrigger: { trigger: '#proj-wrap', start: 'top 85%' },
+                    scale: 0, opacity: 0, duration: 0.8, ease: 'back.out(1.7)'
+                });
+
+                // Project button wobble
+                const btn = document.getElementById('proj-btn');
+                if (btn) {
+                    btn.addEventListener('mousemove', e => {
+                        const r = btn.getBoundingClientRect();
+                        gsap.to(btn, {
+                            rotateX: ((e.clientY - r.top - r.height / 2) / (r.height / 2)) * -6,
+                            rotateY: ((e.clientX - r.left - r.width / 2) / (r.width / 2)) * 6,
+                            transformPerspective: 500, duration: 0.3
+                        });
+                    });
+                    btn.addEventListener('mouseleave', () => {
+                        gsap.to(btn, { rotateX: 0, rotateY: 0, duration: 0.5, ease: 'elastic.out(1,0.4)' });
+                    });
+                }
+            }
+
+
+
+            // ──────────────────────────────────────────────────
+            // LIQUID TEXT EFFECT
+            // ──────────────────────────────────────────────────
+            function initLiquidText() {
+                const el = document.getElementById('ink-text');
+                if (!el) return;
+                const text = el.textContent.trim();
+                el.innerHTML = '';
+                const chars = [];
+                for (const ch of text) {
+                    const s = document.createElement('span');
+                    s.textContent = ch;
+                    s.style.display = 'inline-block';
+                    s.style.willChange = 'transform';
+                    s.style.transformOrigin = 'center bottom';
+                    el.appendChild(s);
+                    chars.push(s);
+                }
+                el.addEventListener('mousemove', e => {
+                    chars.forEach(sp => {
+                        const r = sp.getBoundingClientRect();
+                        const dx = e.clientX - (r.left + r.width / 2);
+                        const dy = e.clientY - (r.top + r.height / 2);
+                        const d = Math.sqrt(dx * dx + dy * dy);
+                        if (d < 110) {
+                            const t = 1 - d / 110;
+                            gsap.to(sp, { y: -t * 20, scaleX: 1 - t * .12, scaleY: 1 + t * .5, skewX: (dx > 0 ? 1 : -1) * t * 6, color: `hsl(${200 + t * 30},70%,${70 + t * 15}%)`, duration: .12, ease: 'power2.out', overwrite: 'auto' });
+                        } else {
+                            gsap.to(sp, { y: 0, scaleX: 1, scaleY: 1, skewX: 0, color: '', duration: .4, ease: 'elastic.out(1,0.4)', overwrite: 'auto' });
+                        }
+                    });
+                });
+                el.addEventListener('mouseleave', () => {
+                    chars.forEach(sp => gsap.to(sp, { y: 0, scaleX: 1, scaleY: 1, skewX: 0, color: '', duration: .5, ease: 'elastic.out(1,0.3)' }));
+                });
+            }
+
+
+
+            // ──────────────────────────────────────────────────
+            // INIT EVERYTHING
+            // ──────────────────────────────────────────────────
+            function init() {
+                console.log('🚀 Initializing retro portfolio...');
+                try {
+                    initStarfield();
+                    initAnimations();
+
+                    initLiquidText();
+
+                    console.log('✅ All systems go!');
+                } catch (e) {
+                    console.error('❌ Init error:', e);
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+
+    <!-- ═══ FLOATING CV BUTTON ═══ -->
+    <a href="https://drive.google.com/file/d/1IaOGk7lJszWqdQL06B6aRS5VjN3A0GUL/view?usp=sharing" target="_blank"
+        rel="noopener noreferrer" class="floating-cv-btn" id="floating-cv">
+        <i class="fas fa-file-download"></i>
+        <span class="cv-label">Download CV</span>
+    </a>
+</body>
+
+</html>
